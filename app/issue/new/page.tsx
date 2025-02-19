@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import { TextField, Button, Callout, } from '@radix-ui/themes';
 import SimpleMDE from 'react-simplemde-editor';
@@ -10,12 +11,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createIssueSchema } from '@/app/ValidationSchema';
 import {z} from "zod";
 import ErrorMessage from '@/app/Component/ErrorMessage';
+import Spinner from '@/app/Component/Spinner';
 
 type IssueForm=z.infer<typeof createIssueSchema>
 
 const NewIssuePage = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [error,setError] =useState('');
+  const [error,setError] =useState('');
+  const[isSubmitting,setisSubmitting]=useState(false);
   const router = useRouter();
   const { register, control, handleSubmit ,formState:{errors}} = useForm<IssueForm>({
     resolver:zodResolver(createIssueSchema)
@@ -23,10 +25,12 @@ const NewIssuePage = () => {
 
   const onSubmit = async (data: IssueForm) => {
     try {
+        setisSubmitting(true);
       await axios.post('http://localhost:3000/api/issues', data);
       router.push('/issue');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
+        setisSubmitting(false);
       setError('An unexpected error occured',)
     }
   };
@@ -52,7 +56,7 @@ const NewIssuePage = () => {
         render={({ field }) => <SimpleMDE placeholder="Description" {...field} />}
       />
  <ErrorMessage >{errors.description?.message} </ErrorMessage>
-      <Button type="submit">Submit Issue Now</Button>
+      <Button type="submit" disabled={isSubmitting}>Submit Issue Now {isSubmitting && <Spinner/>}  </Button>
     </form>
     </div>
   );
